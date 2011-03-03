@@ -20,16 +20,6 @@ function mydocs { set-location $env:mydocs }
 function editprofile { gvim $profile }
 function editvimrc { gvim "C:\program files\vim\_vimrc" }
 
-function prompt {
-  $cwd = $pwd.Path
-  if ( $cwd.length -ge 30 ) {
-    $cwd = "..." + $cwd.substring($cwd.length - 30 + 4).trimstart(".")
-  }
-  $host.UI.RawUI.WindowTitle = $(get-location)
-  Write-Host( "$cwd>" ) -nonewline -foregroundcolor yellow
-  return " "
-}
-
 function su {
   Start-Process 'PowerShell.exe' -Verb runas -WorkingDir $pwd -ARg "-noexit -command & cd $pwd" 
 }
@@ -43,7 +33,7 @@ cd C:\Projects
 import-module Pscx
 import-module Posh-Hg
 
-# Set up a simple prompt, adding the hg prompt parts inside hg repos
+# Prompt w/ hg support
 function prompt {
   $cwd = $pwd.Path
   if ( $cwd.length -ge 30 ) {
