@@ -1,3 +1,6 @@
+set-alias time measure-command
+set-alias psake invoke-psake
+
 function dw ([string]$arg) {
   get-childitem $arg | format-wide
 }
@@ -27,11 +30,10 @@ function su {
 $HOST.UI.RawUI.BackgroundColor = 5
 $HOST.UI.RawUI.ForegroundColor = 6
 
-cd C:\Projects
-
 # Modules
 import-module Pscx
 import-module Posh-Hg
+import-module psake
 
 # Prompt w/ hg support
 function prompt {
