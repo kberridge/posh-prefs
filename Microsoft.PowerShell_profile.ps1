@@ -1,21 +1,14 @@
 set-alias time measure-command
 set-alias psake invoke-psake
 
-function dw ([string]$arg) {
-  get-childitem $arg | format-wide
-}
+function dw { get-childitem $args | format-wide }
 
 function grep ([string]$arg, [string]$filter="") {
   dir -r -filter $filter | select-string $arg
 }
 
-function ff ([string]$arg) {
-  dir -r -filter $arg
-}
-
-function rrm ([string]$arg) {
-  rm -r -force $arg
-}
+function ff { dir -r -filter $args }
+function rrm { rm -r -force $args }
 
 $env:mydocs = "$env:userprofile\documents"
 
@@ -26,6 +19,8 @@ function editvimrc { gvim "C:\program files\vim\_vimrc" }
 function su {
   Start-Process 'PowerShell.exe' -Verb runas -WorkingDir $pwd -ARg "-noexit -command & cd $pwd" 
 }
+
+function hgcb { hg ci --close-branch -m "closed branch"; hg up default; }
 
 $HOST.UI.RawUI.BackgroundColor = 5
 $HOST.UI.RawUI.ForegroundColor = 6
