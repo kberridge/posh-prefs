@@ -22,6 +22,17 @@ function su {
 
 function hgcb { hg ci --close-branch -m "closed branch"; hg up default; }
 
+function hgbak([string]$dirname, [string]$backupdir='U:\Projects\') {
+  $backuppath = $backupdir + $dirname
+  if ((test-path $backuppath) -eq $false) {
+    mkdir $backuppath > $null
+    hg clone . $backuppath -U
+  }
+  else {
+    hg push $backuppath
+  }
+}
+
 $HOST.UI.RawUI.BackgroundColor = 5
 $HOST.UI.RawUI.ForegroundColor = 6
 
