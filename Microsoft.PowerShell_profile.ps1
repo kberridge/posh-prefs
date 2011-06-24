@@ -73,3 +73,26 @@ function TabExpansion($line, $lastWord) {
         default { DefaultTabExpansion $line $lastWord }
     }
 }
+
+# function which serves your psake that understands parameters
+function psglass {
+  param(
+      [Parameter(Mandatory=$true, Position=0)]
+      [string]$taskname,
+      [alias("e")]
+      [string]$pbenv=$null,
+      [alias("t")]
+      [string[]]$tags=$null
+  )
+
+  $props = @{}
+  if ($pbenv -ne $null -and $pbenv -ne [String]::Empty) {
+    $props.environment = $pbenv
+  }
+  $params = @{}
+  if ($tags -ne $null) {
+    $params.tags = $tags
+  }
+
+  invoke-psake $taskname -properties $props -parameters $params
+}
