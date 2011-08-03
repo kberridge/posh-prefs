@@ -29,12 +29,18 @@ function hgbak([string]$dirname, [string]$backupdir='U:\Projects\') {
     hg clone . $backuppath -U
   }
   else {
-    hg push $backuppath
+    hg push $backuppath --new-branch
   }
 }
 
-$HOST.UI.RawUI.BackgroundColor = 5
-$HOST.UI.RawUI.ForegroundColor = 6
+function cleanvs([switch]$whatif) {
+  if ($whatif) {
+    ls . -include bin,obj PBS.Libraries -recurse | where{$_ -notmatch '.hg'} | remove-item -recurse -whatif
+  }
+  else {
+    ls . -include bin,obj PBS.Libraries -recurse | where{$_ -notmatch '.hg'} | remove-item -recurse
+  }
+}
 
 # Modules
 import-module Pscx
@@ -82,7 +88,9 @@ function psglass {
       [alias("e")]
       [string]$pbenv=$null,
       [alias("t")]
-      [string[]]$tags=$null
+      [string[]]$tags=$null,
+      [alias("s")]
+      [string[]]$specs=$null
   )
 
   $props = @{}
@@ -92,6 +100,9 @@ function psglass {
   $params = @{}
   if ($tags -ne $null) {
     $params.tags = $tags
+  }
+  if ($specs -ne $null) {
+    $params.specs = $specs
   }
 
   invoke-psake $taskname -properties $props -parameters $params
