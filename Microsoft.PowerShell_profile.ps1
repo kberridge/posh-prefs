@@ -90,7 +90,9 @@ function psglass {
       [alias("t")]
       [string[]]$tags=$null,
       [alias("s")]
-      [string[]]$specs=$null
+      [string[]]$specs=$null,
+      [alias("r")]
+      [string]$run=$null
   )
 
   $props = @{}
@@ -103,6 +105,9 @@ function psglass {
   }
   if ($specs -ne $null) {
     $params.specs = $specs
+  }
+  if ($run -ne $null) {
+    $params.run = $run
   }
 
   invoke-psake $taskname -properties $props -parameters $params
