@@ -84,7 +84,7 @@ function TabExpansion($line, $lastWord) {
 function psglass {
   param(
       [Parameter(Mandatory=$true, Position=0)]
-      [string]$taskname,
+      [string[]]$TaskList,
       [alias("e")]
       [string]$pbenv=$null,
       [alias("t")]
@@ -110,5 +110,5 @@ function psglass {
     $params.run = $run
   }
 
-  invoke-psake $taskname -properties $props -parameters $params
+  invoke-psake -TaskList $TaskList -properties $props -parameters $params
 }
