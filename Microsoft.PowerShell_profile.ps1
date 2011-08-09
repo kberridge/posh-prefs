@@ -1,3 +1,7 @@
+# Modules
+import-module Posh-Hg
+import-module 'C:\Projects\psake'
+
 set-alias time measure-command
 set-alias psake invoke-psake
 
@@ -7,12 +11,9 @@ function grep ([string]$arg, [string]$filter="") {
   dir -r -filter $filter | select-string $arg
 }
 
-function ff { dir -r -filter $args }
+function ff([string] $filter) { dir -r -filter $filter }
 function rrm { rm -r -force $args }
 
-$env:mydocs = "$env:userprofile\documents"
-
-function mydocs { set-location $env:mydocs }
 function editprofile { gvim $profile }
 function editvimrc { gvim "C:\program files\vim\_vimrc" }
 
@@ -41,11 +42,6 @@ function cleanvs([switch]$whatif) {
     ls . -include bin,obj PBS.Libraries -recurse | where{$_ -notmatch '.hg'} | remove-item -recurse
   }
 }
-
-# Modules
-import-module Pscx
-import-module Posh-Hg
-import-module psake
 
 # Prompt w/ hg support
 function prompt {
@@ -84,7 +80,7 @@ function TabExpansion($line, $lastWord) {
 function psglass {
   param(
       [Parameter(Mandatory=$true, Position=0)]
-      [string[]]$TaskList,
+      [string]$Task,
       [alias("e")]
       [string]$pbenv=$null,
       [alias("t")]
@@ -96,19 +92,19 @@ function psglass {
   )
 
   $props = @{}
-  if ($pbenv -ne $null -and $pbenv -ne [String]::Empty) {
+  if ($pbenv) {
     $props.environment = $pbenv
   }
   $params = @{}
-  if ($tags -ne $null) {
+  if ($tags) {
     $params.tags = $tags
   }
-  if ($specs -ne $null) {
+  if ($specs) {
     $params.specs = $specs
   }
-  if ($run -ne $null) {
+  if ($run) {
     $params.run = $run
   }
 
-  invoke-psake -TaskList $TaskList -properties $props -parameters $params
+  invoke-psake $Task -properties $props -parameters $params
 }
