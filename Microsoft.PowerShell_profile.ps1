@@ -3,7 +3,7 @@ import-module Posh-Hg
 import-module 'C:\Projects\psake'
 
 set-alias time measure-command
-set-alias psake invoke-psake
+set-alias psake psglass
 
 function dw { get-childitem $args | format-wide }
 
@@ -78,33 +78,40 @@ function TabExpansion($line, $lastWord) {
 
 # function which serves your psake that understands parameters
 function psglass {
-  param(
-      [Parameter(Mandatory=$true, Position=0)]
-      [string]$Task,
-      [alias("e")]
-      [string]$pbenv=$null,
-      [alias("t")]
-      [string[]]$tags=$null,
-      [alias("s")]
-      [string[]]$specs=$null,
-      [alias("r")]
-      [string]$run=$null
+  param (
+    [Parameter(Position=0,Mandatory=0)]
+    [string[]]$taskList = @(),
+    [Parameter(Position=1,Mandatory=0)]
+    [switch]$docs = $false,
+    [Parameter(Position=2,Mandatory=0)]
+    [System.Collections.Hashtable]$parameters = @{},
+    [Parameter(Position=3, Mandatory=0)]
+    [System.Collections.Hashtable]$properties = @{},
+    [alias("e")]
+    [string]$pbenv=$null,
+    [alias("t")]
+    [string[]]$tags=$null,
+    [alias("s")]
+    [string[]]$specs=$null,
+    [alias("r")]
+    [string]$run=$null
   )
 
-  $props = @{}
-  if ($pbenv) {
-    $props.environment = $pbenv
-  }
-  $params = @{}
-  if ($tags) {
-    $params.tags = $tags
-  }
-  if ($specs) {
-    $params.specs = $specs
-  }
-  if ($run) {
-    $params.run = $run
-  }
+  if ($pbenv) { $properties.environment = $pbenv }
+  if ($tags) { $parameters.tags = $tags }
+  if ($specs) { $parameters.specs = $specs }
+  if ($run) { $parameters.run = $run }  
 
-  invoke-psake $Task -properties $props -parameters $params
+  $psakeParams = @{ taskList = $taskList; docs = $docs; parameters = $parameters; properties = $properties }
+
+  $psakeDir = $nil
+  if (Test-Path '.\Libraries\psake') { $psakeDir = '.\Libraries\psake' }
+  elseif (Test-Path '..\Libraries\psake') { $psakeDir = '..\Libraries\psake' }
+  
+  if ($psakeDir) {
+    & "$psakeDir\psake.ps1" @psakeParams
+  }
+  else {
+    invoke-psake @psakeParams
+  } 
 }
