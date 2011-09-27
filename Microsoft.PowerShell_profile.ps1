@@ -7,8 +7,20 @@ set-alias psake psglass
 
 function dw { get-childitem $args | format-wide }
 
-function grep ([string]$arg, [string]$filter="") {
-  dir -r -filter $filter | select-string $arg
+function grep {
+<#
+.SYNOPSIS
+  Searches for matches in files
+.DESCRIPTION
+  grep forsomething -path .\subfolder -filter *.cs
+#>
+  param(
+    [Parameter(Position=0, Mandatory=1)]
+    [string]$pattern, 
+    [string]$path='.', 
+    [string]$filter=$null
+  )
+  dir -r -path $path -filter $filter | select-string $pattern
 }
 
 function ff([string] $filter) { dir -r -filter $filter }
@@ -104,8 +116,9 @@ function psglass {
 
   $psakeParams = @{ taskList = $taskList; docs = $docs; parameters = $parameters; properties = $properties }
 
-  $psakeDir = $nil
-  if (Test-Path '.\Libraries\psake') { $psakeDir = '.\Libraries\psake' }
+  if (Test-Path '..\vendor\psake') { $psakeDir = '..\vendor\psake' }
+  elseif (Test-Path '.\vendor\psake') { $psakeDir = '.\vendor\psake' }
+  elseif (Test-Path '.\Libraries\psake') { $psakeDir = '.\Libraries\psake' }
   elseif (Test-Path '..\Libraries\psake') { $psakeDir = '..\Libraries\psake' }
   
   if ($psakeDir) {
