@@ -46,6 +46,10 @@ function hgbak([string]$dirname, [string]$backupdir='U:\Projects\') {
   }
 }
 
+function hgtoday([string]$user='berridge') {
+  hg sl -u $user -d (get-date -format d)
+}
+
 function cleanvs([switch]$whatif) {
   if ($whatif) {
     ls . -include bin,obj PBS.Libraries -recurse | where{$_ -notmatch '.hg'} | remove-item -recurse -whatif
@@ -106,13 +110,16 @@ function psglass {
     [alias("s")]
     [string[]]$specs=$null,
     [alias("r")]
-    [string]$run=$null
+    [string]$run=$null,
+    [alias("c")]
+    [string]$configuration=$null
   )
 
   if ($pbenv) { $properties.environment = $pbenv }
   if ($tags) { $parameters.tags = $tags }
   if ($specs) { $parameters.specs = $specs }
   if ($run) { $parameters.run = $run }  
+  if ($configuration) { $properties.BuildConfiguration = $configuration }
 
   $psakeParams = @{ taskList = $taskList; docs = $docs; parameters = $parameters; properties = $properties }
 
