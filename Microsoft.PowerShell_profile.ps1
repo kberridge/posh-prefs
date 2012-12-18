@@ -1,5 +1,5 @@
 # Modules
-import-module Posh-Hg
+import-module posh-hg
 import-module 'C:\Projects\psake'
 
 set-alias time measure-command
@@ -20,7 +20,12 @@ function grep {
     [string]$path='.', 
     [string]$filter=$null
   )
-  dir -r -path $path -filter $filter | select-string $pattern
+  $excludes = '*.exe', '*.dll', '*.pdb', '*.resx', '*.doc', 
+    '*.pdf', '*.map', '*.bmp', '*.png', '*.jpg', '*.psd',
+    '*.db', '*.jar', '*.zip', '*.fla', '*.gif', '*.sqlite',
+    '*.cache', '*.resources'
+  dir -r -path $path -filter $filter -exclude $excludes |
+    select-string $pattern
 }
 
 function ff([string] $filter) { dir -r -filter $filter }
@@ -50,6 +55,20 @@ function hgtoday([string]$user='berridge') {
   hg sl -u $user -d (get-date -format d)
 }
 
+function hgpl {
+  $out = hg pull -u
+  $out
+
+  $matches = $null
+  foreach ($line in $out) {
+    if($line -match "added (\d+) changesets") { break }
+  }
+
+  if ($matches) {
+    hg sl -l $matches[1]
+  }
+}
+
 function cleanvs([switch]$whatif) {
   if ($whatif) {
     ls . -include bin,obj PBS.Libraries -recurse | where{$_ -notmatch '.hg'} | remove-item -recurse -whatif
@@ -69,27 +88,10 @@ function prompt {
   Write-Host($cwd) -nonewline -foregroundcolor yellow
 
   # Mercurial Prompt
-  $Global:HgStatus = Get-HgStatus
-  Write-HgStatus $HgStatus
+  Write-VcsStatus
 
   Write-Host
   return "> "
-}
-
-if(-not (Test-Path Function:\DefaultTabExpansion)) {
-    Rename-Item Function:\TabExpansion DefaultTabExpansion
-}
-
-# Set up tab expansion and include hg expansion
-function TabExpansion($line, $lastWord) {
-    $lastBlock = [regex]::Split($line, '[|;]')[-1]
-    
-    switch -regex ($lastBlock) {
-        # mercurial and tortoisehg tab expansion
-        '(hg|thg) (.*)' { HgTabExpansion($lastBlock) }
-        # Fall back on existing tab expansion
-        default { DefaultTabExpansion $line $lastWord }
-    }
 }
 
 # function which serves your psake that understands parameters
@@ -112,7 +114,9 @@ function psglass {
     [alias("r")]
     [string]$run=$null,
     [alias("c")]
-    [string]$configuration=$null
+    [string]$configuration=$null,
+    [alias("v")]
+    [string]$version=$null
   )
 
   if ($pbenv) { $properties.environment = $pbenv }
@@ -120,6 +124,7 @@ function psglass {
   if ($specs) { $parameters.specs = $specs }
   if ($run) { $parameters.run = $run }  
   if ($configuration) { $properties.BuildConfiguration = $configuration }
+  if ($version) { $properties.Version = $version }
 
   $psakeParams = @{ taskList = $taskList; docs = $docs; parameters = $parameters; properties = $properties }
 
