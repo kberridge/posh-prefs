@@ -5,10 +5,14 @@ function prompt {
   return "> "
 }
 
-function match-col([string]$regex) {
-  $input | ?{ $_.Name -match $regex }
+filter match-col([string]$colRegex) {
+  if ($_.Name -match $colRegex) { $_ }
 }
 
-function match-table([string]$schemaRegex, [string]$tableRegex) {
-  $input | ?{ $_.Schema -match $schemaRegex -and $_.Name -match $tableRegex }
+filter match-table([string]$schemaRegex, [string]$tableRegex) {
+  if ($_.Schema -match $schemaRegex -and $_.Name -match $tableRegex) { $_ }
+}
+
+function select-from([string]$table) {
+  invoke-sqlcmd "select top 100 * from $table"
 }
