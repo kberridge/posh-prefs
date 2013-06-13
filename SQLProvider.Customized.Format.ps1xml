@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- *******************************************************************
+Copyright (c) Microsoft Corporation.  All rights reserved.
+******************************************************************** -->
+
+<Configuration>
+
+  <ViewDefinitions>
+
+    <!-- SMO -->
+
+    <View>
+      <Name>Column</Name>
+      <ViewSelectedBy>
+        <TypeName>Microsoft.SqlServer.Management.Smo.Column</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <TableHeaders>
+
+          <TableColumnHeader>
+            <Label>Name</Label>
+            <Width>80</Width>
+            <Alignment>left</Alignment>
+          </TableColumnHeader>
+
+          <TableColumnHeader>
+            <Label>Type</Label>
+            <Width>80</Width>
+            <Alignment>left</Alignment>
+          </TableColumnHeader>
+
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+
+              <TableColumnItem>
+                <PropertyName>Name</PropertyName>
+              </TableColumnItem>
+
+              <TableColumnItem>
+                <ScriptBlock>"$($_.DataType.Name)($($_.DataType.MaximumLength))"</ScriptBlock>
+              </TableColumnItem>
+
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+
+  </ViewDefinitions>
+</Configuration>
