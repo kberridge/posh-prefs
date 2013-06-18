@@ -13,6 +13,10 @@ filter match-table([string]$schemaRegex, [string]$tableRegex) {
   if ($_.Schema -match $schemaRegex -and $_.Name -match $tableRegex) { $_ }
 }
 
-function select-from([string]$table) {
-  invoke-sqlcmd "select top 100 * from $table"
+function select-from([string]$table, [string[]]$cols='*', [string]$top=$nil) {
+  $colstr = $cols -join ','
+  $topstr = if ($top) {"top $top"} else {''}
+  $sql = "select $topstr $colstr from $table"
+  $sql
+  invoke-sqlcmd $sql
 }
