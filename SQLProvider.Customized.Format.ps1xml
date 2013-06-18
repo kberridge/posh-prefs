@@ -24,8 +24,14 @@ Copyright (c) Microsoft Corporation.  All rights reserved.
           </TableColumnHeader>
 
           <TableColumnHeader>
-            <Label>Type</Label>
-            <Width>80</Width>
+            <Label>DataType</Label>
+            <Width>15</Width>
+            <Alignment>left</Alignment>
+          </TableColumnHeader>
+
+          <TableColumnHeader>
+            <Label>Nullable</Label>
+            <Width>8</Width>
             <Alignment>left</Alignment>
           </TableColumnHeader>
 
@@ -40,6 +46,10 @@ Copyright (c) Microsoft Corporation.  All rights reserved.
 
               <TableColumnItem>
                 <ScriptBlock>"$($_.DataType.Name)($($_.DataType.MaximumLength))"</ScriptBlock>
+              </TableColumnItem>
+
+              <TableColumnItem>
+                <ScriptBlock>if($_.Nullable) { "null" } else { "not null" }</ScriptBlock>
               </TableColumnItem>
 
             </TableColumnItems>
