@@ -30,9 +30,7 @@ function TabExpansion($line, $lastWord) {
     TabExpansionSqlPsBackup $line $lastWord
   }
   else {
-    $aindex = $lastWord.LastIndexOf('\')
-    $bindex = $lastWord.LastIndexOf('/')
-    $index = (($aindex, $bindex) | measure-object -max).Maximum
+    $index = $lastWord.LastIndexOfAny(@('\', '/'))
     if ($index -gt -1) { 
       $parent = $lastWord.substring(0, $index+1) 
       $leaf = $lastWord.substring($index+1)
