@@ -21,6 +21,26 @@ function select-from([string]$table, [string[]]$cols='*', [string]$top=$nil) {
   invoke-sqlcmd $sql
 }
 
+function cddb($db) {
+  $parts = @($db.Split(('\', '/')))
+  if ($parts.Length -eq 1) {
+    cd "\sql\$($parts[0])\default\databases"
+  }
+  elseif ($parts.Length -eq 2) {
+    cd "\sql\$($parts[0])\default\databases\$($parts[1])"
+  }
+  elseif ($parts.Length -eq 3) {
+    cd "\sql\$($parts[0])\$($parts[1])\databases\$($parts[2])"
+  }
+  else {
+    Write-Error "Supports only 1, 2, or 3 path parts"
+  }
+}
+
+function lsc($table) {
+  ls $table\columns
+}
+
 if ((test-path function:\TabExpansion) -and !(test-path function:\TabExpansionSqlPsBackup)) {
   rename-item function:\TabExpansion TabExpansionSqlPsBackup
 }
