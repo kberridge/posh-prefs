@@ -1,10 +1,15 @@
 # Modules
 import-module posh-hg
 import-module 'C:\Projects\psake'
+import-module PsGet
+import-module psreadline
 
 set-alias time measure-command
 set-alias psake psglass
 
+function foureyes { C:\projects\four-eyes\four-eyes\bin\debug\FourEyes.exe $args }
+
+function cl($path) { cd $path; ls; }
 function dw { get-childitem $args | format-wide }
 
 function grep {
@@ -69,14 +74,27 @@ function hgpl {
   }
 }
 
+function hgcloseoldbranch($branchname) {
+  hg debugsetparent $branchname
+  hg branch $branchname
+  hg ci --close-branch -m "closes old branch"
+}
+
+function freshen() {
+  psake build, dbmigrate; psake dbmigrate -e test;
+}
+
 function cleanvs([switch]$whatif) {
   if ($whatif) {
-    ls . -include bin,obj PBS.Libraries -recurse | where{$_ -notmatch '.hg'} | remove-item -recurse -whatif
+    ls . -include bin,obj -recurse | where{$_ -notmatch '.hg'} | remove-item -recurse -whatif
   }
   else {
-    ls . -include bin,obj PBS.Libraries -recurse | where{$_ -notmatch '.hg'} | remove-item -recurse
+    ls . -include bin,obj -recurse | where{$_ -notmatch '.hg'} | remove-item -recurse
   }
 }
+
+# option to make ctrl+L clear screen support my 2 line prompt
+Set-PSReadlineOption -ExtraPromptLineCount 1
 
 # Prompt w/ hg support
 function prompt {
@@ -116,7 +134,11 @@ function psglass {
     [alias("c")]
     [string]$configuration=$null,
     [alias("v")]
-    [string]$version=$null
+    [string]$version=$null,
+    [alias("p")]
+    [string]$publishProfile=$null,
+    [alias("pwd")]
+    [string[]]$certificatePassword=$null
   )
 
   if ($pbenv) { $properties.environment = $pbenv }
@@ -125,6 +147,8 @@ function psglass {
   if ($run) { $parameters.run = $run }  
   if ($configuration) { $properties.BuildConfiguration = $configuration }
   if ($version) { $properties.Version = $version }
+  if ($publishProfile) { $properties.PublishProfile = $publishProfile }
+  if ($certificatePassword) { $properties.CertificatePassword = $certificatePassword}
 
   $psakeParams = @{ taskList = $taskList; docs = $docs; parameters = $parameters; properties = $properties }
 
@@ -140,3 +164,6 @@ function psglass {
     invoke-psake @psakeParams
   } 
 }
+
+# Load Jump-Location profile
+Import-Module 'C:\Users\kberridge\Documents\WindowsPowerShell\Modules\Jump.Location\Jump.Location.psd1'

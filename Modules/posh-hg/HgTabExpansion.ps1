@@ -1,4 +1,5 @@
 $script:hgCommands = @()
+$script:hgflowStreams = @()
 
 function HgTabExpansion($lastBlock) {
   switch -regex ($lastBlock) { 
@@ -33,7 +34,9 @@ function HgTabExpansion($lastBlock) {
     
     #Handles hg push <path>
     #Handles hg pull <path>
-    'hg (push|pull) (-\S* )*(\S*)$' {
+    #Handles hg outgoing <path>
+    #Handles hg incoming <path>
+    'hg (push|pull|outgoing|incoming) (-\S* )*(\S*)$' {
       hgRemotes($matches[3])
     }
     
@@ -67,6 +70,17 @@ function HgTabExpansion($lastBlock) {
     'hg commit (\S* )*-(I|X) (\S*)$' {
       hgFiles $matches[3] 'M|A|R|!'
     }    
+    
+    #handles hg flow * <branch name>
+    'hg flow (feature|release|hotfix|support) (\S*)$' {
+      findBranchOrBookmarkOrTags($matches[1]+"/"+$matches[2])
+    }
+    
+    #handles hg flow *
+    'hg flow (\S*)$' {
+      hgflowStreams($matches[1])
+      hgLocalBranches($matches[1])
+    }
   }
 }
 
@@ -240,9 +254,54 @@ function thgCommands($filter) {
   $cmdList | sort 
 }
 
-if (Get-Command "Register-TabExpansion" -errorAction SilentlyContinue)
+function hgflowStreams($filter) {
+  if($script:hgflowStreams.Length -eq 0) {
+    $hgflow = ((hg root) + "\.flow")
+    if (Test-Path $hgflow) {
+      populatehgflowStreams($hgflow)
+    } else {
+      $hgflow = ((hg root) + "\.hgflow")
+      if (Test-Path $hgflow) {
+        populatehgflowStreams($hgflow)
+      }
+    }
+    
+    $script:hgflowStreams = $script:hgflowStreams
+  }
+  
+  if($filter) {
+     $hgflowStreams | ? { $_.StartsWith($filter) } | % { $_.Trim() } | sort  
+  }
+  else {
+    $hgflowStreams | % { $_.Trim() } | sort
+  }
+}
+
+function populatehgflowStreams($filename) {
+  $ini = @{}
+  
+  switch -regex -file $filename
+  {
+    "^\[(.+)\]" # Section
+    {
+      $section = $matches[1]
+      $ini[$section] = @()
+    }
+    "(.+?)\s*=(.*)" # Key
+    {
+      $name,$value = $matches[1..2]
+      $ini[$section] += $name
+    }
+  }
+  
+  # Supporting by 0.4 and 0.9 files
+  $script:hgflowStreams = if ($ini["Basic"]) { $ini["Basic"] } else { $ini["branchname"] }
+}
+
+$PowerTab_RegisterTabExpansion = Get-Command Register-TabExpansion -Module powertab -ErrorAction SilentlyContinue
+if ($PowerTab_RegisterTabExpansion)
 {
-    Register-TabExpansion "hg.exe" -Type Command {
+    & $PowerTab_RegisterTabExpansion "hg.exe" -Type Command {
         param($Context, [ref]$TabExpansionHasOutput, [ref]$QuoteSpaces)  # 1:
 
         $line = $Context.Line
