@@ -1,11 +1,9 @@
 # Modules
-import-module posh-hg
-import-module 'C:\Projects\psake'
-import-module PsGet
-import-module psreadline
-
 set-alias time measure-command
 set-alias psake psglass
+function sake { .\psake.ps1 @args }
+
+$env:VisualStudioVersion = "14.0"
 
 function foureyes { C:\projects\four-eyes\four-eyes\bin\debug\FourEyes.exe $args }
 
@@ -44,17 +42,7 @@ function su {
 }
 
 function hgcb { hg ci --close-branch -m "closed branch"; hg up default; }
-
-function hgbak([string]$dirname, [string]$backupdir='U:\Projects\') {
-  $backuppath = $backupdir + $dirname
-  if ((test-path $backuppath) -eq $false) {
-    mkdir $backuppath > $null
-    hg clone . $backuppath -U
-  }
-  else {
-    hg push $backuppath --new-branch
-  }
-}
+function hgb { hg branch }
 
 function hgtoday([string]$user='berridge') {
   hg sl -u $user -d (get-date -format d)
@@ -81,7 +69,7 @@ function hgcloseoldbranch($branchname) {
 }
 
 function freshen() {
-  psake build, dbmigrate; psake dbmigrate -e test;
+  .\psake build, dbmigrate; psake dbmigrate -e test;
 }
 
 function cleanvs([switch]$whatif) {
@@ -89,7 +77,7 @@ function cleanvs([switch]$whatif) {
     ls . -include bin,obj -recurse | where{$_ -notmatch '.hg'} | remove-item -recurse -whatif
   }
   else {
-    ls . -include bin,obj -recurse | where{$_ -notmatch '.hg'} | remove-item -recurse
+    ls . -include bin,obj -recurse | where{$_ -notmatch '.hg'} | remove-item -recurse -force
   }
 }
 
@@ -106,7 +94,7 @@ function prompt {
   Write-Host($cwd) -nonewline -foregroundcolor yellow
 
   # Mercurial Prompt
-  Write-VcsStatus
+  # Write-VcsStatus
 
   Write-Host
   return "> "
@@ -141,6 +129,7 @@ function psglass {
     [string[]]$certificatePassword=$null
   )
 
+  $properties.VisualStudioVersion = "14.0"
   if ($pbenv) { $properties.environment = $pbenv }
   if ($tags) { $parameters.tags = $tags }
   if ($specs) { $parameters.specs = $specs }
@@ -164,6 +153,8 @@ function psglass {
     invoke-psake @psakeParams
   } 
 }
-
-# Load Jump-Location profile
-Import-Module 'C:\Users\kberridge\Documents\WindowsPowerShell\Modules\Jump.Location\Jump.Location.psd1'
+# Chocolatey profile
+$ChocolateyProfile = "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
+if (Test-Path($ChocolateyProfile)) {
+  Import-Module "$ChocolateyProfile"
+}

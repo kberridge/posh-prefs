@@ -5,6 +5,6 @@ if (-not (test-path "psake")) {
 popd
 
 $profilePath = split-path $profile
-if (-not (test-path $profilePath)) { mkdir $profilePath |> $null }
+if (-not (test-path $profilePath)) { mkdir $profilePath > $null }
 cp -r .\* $profilePath -exclude ".hg" -force
 . $profile
