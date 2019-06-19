@@ -1,9 +1,18 @@
 # Modules
-set-alias time measure-command
-set-alias psake psglass
-function sake { .\psake.ps1 @args }
 
-$env:VisualStudioVersion = "14.0"
+# Aliases
+set-alias time measure-command
+set-alias ib invoke-build
+set-alias psake psglass
+
+$global:cde = @{
+  AUTO_CD = $true
+  NOARG_CD = "\projects"
+  CD_PATH = @('\projects')
+}
+import-module cd-extras -DisableNameChecking
+
+function sake { .\psake.ps1 @args }
 
 function foureyes { C:\projects\four-eyes\four-eyes\bin\debug\FourEyes.exe $args }
 
@@ -66,6 +75,10 @@ function hgcloseoldbranch($branchname) {
   hg debugsetparent $branchname
   hg branch $branchname
   hg ci --close-branch -m "closes old branch"
+}
+
+function tgit($cmd) {
+  & "C:\Program Files\TortoiseGit\bin\TortoiseGitProc.exe" /command:$cmd /path:.
 }
 
 function freshen() {
